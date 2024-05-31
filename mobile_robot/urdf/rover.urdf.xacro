@@ -1,0 +1,80 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="rover">
+    <xacro:include filename="$(find mobile_robot)/gazebo/description.gazebo"/> 
+    <xacro:include filename="$(find mobile_robot)/gazebo/physics.gazebo"/>
+    <xacro:include filename="$(find mobile_robot)/gazebo/plugin.gazebo.xacro"/>      
+
+    <link name="base_footprint"/>
+    <xacro:property name="constant" value="0.0833"/>
+    <xacro:property name="mass" value="1.0"/>
+    <xacro:property name="width" value="0.8"/>
+    <xacro:property name="height" value="0.1"/>
+    <xacro:property name="depth" value="0.7"/>
+    <link name="base_link">
+        <visual>
+            <geometry>
+                <box size="0.8 0.7 0.1" />
+            </geometry>
+            <material name="LightGrey">
+                <color rgba="1.0 0.0 0.0 1.0"/>
+            </material>
+        </visual>
+        <collision>
+            <geometry>
+                <box size="0.8 0.7 0.1" />
+            </geometry>
+        </collision>
+        <inertial>
+            <mass value="1.0"/>
+            <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0"/>
+            <inertia ixx="${constant * mass * (height*height + depth*depth)}" ixy="0.0" ixz="0.0" iyy="${constant * mass * (width*width + height*height)}" iyz="0.0" izz="${constant * mass * (width*width + depth*depth)}"/>
+        </inertial>
+    </link>
+    <joint name="base_joint" type="fixed">
+        <origin xyz="0.0 0.0 0.135" rpy="0.0 0.0 0.0"/>
+        <parent link="base_footprint"/>      
+        <child link="base_link"/>
+        <axis xyz="0.0 0.0 0.0"/>
+        <limit lower="0.0" upper="0.0" effort="0.0" velocity="0.0"/>
+    </joint>
+
+    <xacro:macro name="wheel" params="name x y mesh">
+        <xacro:property name="constant" value="0.0833"/>
+        <xacro:property name="mass" value="0.5"/>
+        <xacro:property name="radius" value="0.15"/>
+        <xacro:property name="length" value="0.1"/>
+        <link name="wheel_${name}_link">
+        <visual>
+            <geometry> 
+                <cylinder radius="${radius}" length="${length}"/>
+            </geometry>
+            <material name="black">
+                <color rgba="0.0 0.0 0.0 1.0"/>
+            </material>
+        </visual>
+        <collision>
+            <geometry> 
+                <cylinder radius="${radius}" length="${length}"/>
+            </geometry>
+        </collision>
+        <inertial>
+            <mass value="${mass}"/>
+            <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0"/>
+            <inertia ixx="${constant * mass * (3*radius*radius + length*length)}" ixy="0.0" ixz="0.0" iyy="${constant * mass * (3*radius*radius + length*length)}" iyz="0.0" izz="${0.5 * mass * radius * radius}"/>
+        </inertial>
+        </link>
+        <joint name="wheel_${name}_joint" type="continuous">
+            <origin xyz="${x} ${y} 0.0" rpy="1.57 0.0 0.0"/>
+            <parent link="base_link"/>
+            <child link="wheel_${name}_link"/>
+            <axis xyz="0.0 0.0 1.0"/>
+            <limit lower="0.0" upper="0.0" effort="0.0" velocity="0.0"/>
+        </joint>
+    </xacro:macro>
+
+    <xacro:wheel name="rear_right" x="0.25" y="0.4" mesh="package://mobile_robot/meshes/right_tire.stl"/>
+    <xacro:wheel name="front_right" x="-0.25" y="0.4" mesh="package://mobile_robot/meshes/right_tire.stl"/>
+    <xacro:wheel name="front_left" x="-0.25" y="-0.4" mesh="package://mobile_robot/meshes/left_tire.stl"/>
+    <xacro:wheel name="rear_left" x="0.25" y="-0.4" mesh="package://mobile_robot/meshes/left_tire.stl"/>
+
+</robot>
